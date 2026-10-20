@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { delimiter, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
@@ -9,6 +9,17 @@ import { prepareAudio } from "./audio.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const [command, ...args] = process.argv.slice(2);
 const env = { ...process.env };
+
+// A saved path only sets the development file picker's starting folder.
+// Keep an explicit environment override and the Rust test-root fallback.
+const gamePath = resolve(root, ".local/game-path.txt");
+if (command === "dev" && !env.WAW_ROOT && existsSync(gamePath)) {
+  const savedPath = readFileSync(gamePath, "utf8").trim();
+  if (savedPath) {
+    env.WAW_ROOT = savedPath;
+  }
+}
+
 const pathKey =
   Object.keys(env).find((key) => key.toLowerCase() === "path") || "PATH";
 

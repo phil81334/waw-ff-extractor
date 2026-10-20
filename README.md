@@ -57,7 +57,7 @@ Close and reopen VS Code after installing these. [Tauri's Windows guide](https:/
 
 Development does not require the app to be in the game folder. It defaults to `.local/test-root`; you can still browse to or drag in your FF files. Extraction writes beside the selected FF unless you choose another output folder, so choose a separate test folder when testing.
 
-Optionally, to start **Add files** in your game's `zone/english`, run `$env:WAW_ROOT = Read-Host 'Paste the folder address containing CoDWaW.exe'` in the PowerShell terminal, paste your actual folder address without quotes or the EXE filename, then run `npm run dev` in that terminal. This setting lasts only for that terminal session; there is no saved game-path file. The packaged EXE always uses its own folder.
+Optionally, to start **Add files** in your game’s `zone/english`, create `.local/game-path.txt` in the project. In Windows File Explorer, open the folder containing `CoDWaW.exe`, click the address bar and copy its full address into that file. Save one line, with no quotes or EXE filename. Restart development after changing it. If the file is missing or blank, the `.local/test-root` default stays in use. An explicit `WAW_ROOT` environment setting takes priority. The packaged EXE always uses its own folder.
 
 Next time, run `npm run dev`, or click the play button beside **dev** in VS Code's **NPM Scripts** panel. If that panel is hidden, right-click the Explorer panel headings and enable **NPM Scripts**.
 
