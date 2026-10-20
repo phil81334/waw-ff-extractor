@@ -1,0 +1,89 @@
+diff --git a/src/ObjCommon/SearchPath/OutputPathFilesystem.cpp b/src/ObjCommon/SearchPath/OutputPathFilesystem.cpp
+index 0594530..71a2c79 100644
+--- a/src/ObjCommon/SearchPath/OutputPathFilesystem.cpp
++++ b/src/ObjCommon/SearchPath/OutputPathFilesystem.cpp
+@@ -5,6 +5,7 @@
+ #include <format>
+ #include <fstream>
+ #include <iostream>
++#include <stdexcept>
+ 
+ namespace fs = std::filesystem;
+ 
+@@ -15,10 +16,26 @@ OutputPathFilesystem::OutputPathFilesystem(const fs::path& path)
+ 
+ std::unique_ptr<std::ostream> OutputPathFilesystem::Open(const std::string& fileName)
+ {
+-    const auto fullNewPath = fs::weakly_canonical(m_path / fileName);
+-
+-    if (!fullNewPath.string().starts_with(m_path.string()))
+-        return nullptr;
++    // Asset names are supplied by the FF. Never let one escape the output folder.
++    const fs::path relativePath(fileName);
++    if (relativePath.is_absolute() || relativePath.has_root_name())
++    {
++        throw std::runtime_error("Unsafe absolute asset path: " + fileName);
++    }
++    for (const auto& part : relativePath)
++    {
++        const auto name = part.string();
++        if (name == ".." || name.find(':') != std::string::npos)
++        {
++            throw std::runtime_error("Unsafe asset path: " + fileName);
++        }
++    }
++    const auto fullNewPath = fs::weakly_canonical(m_path / relativePath);
++    const auto withinOutput = fullNewPath.lexically_relative(m_path);
++    if (withinOutput.empty() || *withinOutput.begin() == "..")
++    {
++        throw std::runtime_error("Asset path leaves the output folder: " + fileName);
++    }
+ 
+     const auto containingDirectory = fullNewPath.parent_path();
+ 
+diff --git a/src/Unlinking/Unlinker.cpp b/src/Unlinking/Unlinker.cpp
+index a9e9896..705d6e4 100644
+--- a/src/Unlinking/Unlinker.cpp
++++ b/src/Unlinking/Unlinker.cpp
+@@ -226,12 +226,7 @@ namespace
+                 const fs::path outputFolderPath(outputFolderPathStr);
+                 fs::create_directories(outputFolderPath);
+ 
+-                fs::path zoneDefinitionFileFolder(outputFolderPath);
+-                zoneDefinitionFileFolder.append("zone_source");
+-                fs::create_directories(zoneDefinitionFileFolder);
+-
+-                if (!WriteZoneDefinitionFile(zone, zoneDefinitionFileFolder))
+-                    return false;
++                // This app exports stored assets, not a generated build inventory.
+ 
+                 OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
+                 AssetDumpingContext context(zone, outputFolderPathStr, outputFolderOutputPath, searchPath, std::nullopt);
+@@ -296,7 +291,12 @@ namespace
+ 
+                 LogLoadedZone(*zone);
+ 
+-                auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
++                // Embedded-only exports do not need loose files or IWD archives.
++                std::vector<std::string> searchPathsForZone;
++                if (!m_args.m_skip_obj)
++                {
++                    searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
++                }
+                 for (const auto& searchPath : searchPathsForZone)
+                     paths.RefSearchPath(searchPath);
+ 
+@@ -365,7 +365,12 @@ namespace
+ 
+                 LogLoadedZone(*zone);
+ 
+-                auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
++                // Embedded-only exports do not need loose files or IWD archives.
++                std::vector<std::string> searchPathsForZone;
++                if (!m_args.m_skip_obj)
++                {
++                    searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory, zone->m_game_id);
++                }
+                 for (const auto& searchPath : searchPathsForZone)
+                     paths.RefSearchPath(searchPath);
+ 

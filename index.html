@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WaW FF Extractor</title>
+  </head>
+  <body>
+    <main id="app" hidden>
+      <div class="tab-bar">
+        <span class="tab">Extract</span><span>WaW FF Extractor · 0.2.0</span>
+      </div>
+      <section class="panel">
+        <div class="toolbar">
+          <span>FastFiles (.ff)</span>
+          <div>
+            <button id="add">Add files…</button>
+            <button id="clear">Clear</button>
+          </div>
+        </div>
+        <div id="drop-zone">
+          <p id="empty">Drop World at War FF files here, or click Add files.</p>
+          <ul id="queue" aria-label="Files to extract"></ul>
+        </div>
+        <fieldset>
+          <legend>Extract</legend>
+          <label><input type="checkbox" id="raw" checked /> Raw files</label>
+          <label
+            ><input type="checkbox" id="sounds" checked /> Embedded
+            sounds</label
+          >
+          <label
+            ><input type="checkbox" id="tables" checked /> CSV tables</label
+          >
+        </fieldset>
+        <p class="hint">
+          Scripts and other stored files, original WAV/XWMA sounds, and table
+          data. No map, model, FX or menu reconstruction.
+        </p>
+        <label class="conversion-option">
+          <input type="checkbox" id="convert-sounds" />
+          Convert XWMA to WAV copies (keep originals)
+        </label>
+        <p class="hint conversion-hint">44.1 kHz · stereo · 4-bit Microsoft ADPCM. Copies go in converted-wav.</p>
+        <div class="output-row">
+          <span>Save to</span
+          ><output id="destination"
+            >A folder beside each FF, named after that FF</output
+          ><button id="browse-output">Change…</button
+          ><button id="reset-output" title="Use a folder beside each FF">
+            Reset
+          </button>
+        </div>
+        <div class="overwrite-row">
+          <label for="overwrite">Existing output</label
+          ><select id="overwrite">
+            <option value="skip">Skip</option>
+            <option value="backup">Back up folder, then replace</option>
+            <option value="replace">Replace</option>
+          </select>
+        </div>
+        <details>
+          <summary>Log</summary>
+          <div class="log-tools"><button id="copy-log" type="button">Copy log</button></div>
+          <pre id="log" tabindex="0"></pre>
+        </details>
+        <p id="message" role="status">Ready.</p>
+        <div class="actions">
+          <span id="count">No files added</span
+          ><button class="primary" id="extract" disabled>Extract</button>
+        </div>
+      </section>
+    </main>
+    <footer id="footer" hidden>
+      <span id="status" role="status">Ready</span>
+      <div class="footer-tools">
+        <span id="environment"></span>
+        <button
+          id="about"
+          class="icon-button"
+          type="button"
+          aria-label="About WaW FF Extractor"
+          title="About"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v6" />
+            <circle cx="12" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
+          </svg>
+        </button>
+      </div>
+    </footer>
+    <dialog id="about-dialog">
+      <div class="dialog-title">About WaW FF Extractor</div>
+      <div class="dialog-body">
+        <p>
+          An unofficial tool made for the World
+          at War modding community.
+        </p>
+        <p>
+          Extracts raw files, embedded WAV/XWMA sounds and CSV tables from PC
+          World at War FFs. Inspired by Tom_Bmx’s FastFile Extractor, powered by
+          OpenAssetTools.
+        </p>
+        <p>
+          Raw files and embedded sounds keep their stored bytes. Tables keep
+          their stored cells; CSV formatting is recreated. This is not a map
+          decompiler or an asset reconstruction tool. Optional conversion adds ADPCM WAV copies while keeping the original XWMA files.
+        </p>
+        <p>
+          Independent of Treyarch, Activision, UGX and Tom_Bmx. Open source
+          under GPL-3.0. OpenAssetTools credits and source details are in
+          ATTRIBUTION.md. WAV conversion uses FFmpeg (LGPL-2.1-or-later).
+        </p>
+        <p class="credit">Created by <strong>phil81334</strong>.<br />Extraction engine: OpenAssetTools contributors.</p>
+        <label for="repo-url">Source, instructions and releases</label>
+        <input id="repo-url" class="repo-url" value="https://github.com/phil81334/waw-ff-extractor" readonly />
+        <div class="dialog-actions">
+          <button id="close-about">Close</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="startup-error" aria-labelledby="startup-title">
+      <div class="dialog-title" id="startup-title">World at War folder required</div>
+      <div class="dialog-body">
+        <p id="startup-message"></p>
+        <div class="dialog-actions"><button id="quit" type="button">Close</button></div>
+      </div>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
